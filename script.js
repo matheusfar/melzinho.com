@@ -1,39 +1,34 @@
+
+const firebaseConfig = {
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_AUTH_DOMAIN",
+    projectId: "SEU_PROJECT_ID",
+    storageBucket: "SEU_STORAGE_BUCKET",
+    messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+    appId: "SEU_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+
+// ===============================
 // ===== GALERIA =====
+// ===============================
 const galeriaImagens = [
-    'imagens/foto1.jpeg',
-    'imagens/foto2.jpeg',
-    'imagens/foto3.jpeg',
-    'imagens/foto4.jpeg',
-    'imagens/foto5.jpeg',
-    'imagens/foto6.jpeg',
-    'imagens/foto7.jpeg',
-    'imagens/foto8.jpeg',
-    'imagens/foto9.jpeg',
-    'imagens/foto10.jpeg',
-    'imagens/foto11.jpeg',
-    'imagens/foto12.jpeg',
-    'imagens/foto13.jpeg',
-    'imagens/foto14.jpeg',
-    'imagens/foto15.jpeg',
-    'imagens/foto16.jpeg',
-    'imagens/foto17.jpeg',
-    'imagens/foto18.jpeg',
-    'imagens/foto19.jpeg',
-    'imagens/foto20.jpeg',
-    'imagens/foto21.jpeg',
-    'imagens/foto22.jpeg',
-    'imagens/foto23.jpeg',
-    'imagens/foto24.jpeg',
-    'imagens/foto25.jpeg',
-    'imagens/foto26.jpeg',
-    'imagens/foto27.jpeg',
-    'imagens/foto28.jpeg',
-    'imagens/foto29.jpeg',
-    'imagens/foto30.jpeg',
+    'imagens/foto1.jpeg','imagens/foto2.jpeg','imagens/foto3.jpeg',
+    'imagens/foto4.jpeg','imagens/foto5.jpeg','imagens/foto6.jpeg',
+    'imagens/foto7.jpeg','imagens/foto8.jpeg','imagens/foto9.jpeg',
+    'imagens/foto10.jpeg','imagens/foto11.jpeg','imagens/foto12.jpeg',
+    'imagens/foto13.jpeg','imagens/foto14.jpeg','imagens/foto15.jpeg',
+    'imagens/foto16.jpeg','imagens/foto17.jpeg','imagens/foto18.jpeg',
+    'imagens/foto19.jpeg','imagens/foto20.jpeg','imagens/foto21.jpeg',
+    'imagens/foto22.jpeg','imagens/foto23.jpeg','imagens/foto24.jpeg',
+    'imagens/foto25.jpeg','imagens/foto26.jpeg','imagens/foto27.jpeg',
+    'imagens/foto28.jpeg','imagens/foto29.jpeg','imagens/foto30.jpeg'
 ];
 
 const fotos = document.getElementById('fotos-container');
-
 galeriaImagens.forEach(img => {
     const i = document.createElement('img');
     i.src = img;
@@ -42,48 +37,45 @@ galeriaImagens.forEach(img => {
 });
 
 
-// ===== RECADOS =====
+// ===============================
+// ===== RECADOS (FIRESTORE) =====
+// ===============================
 const formRecado = document.getElementById('form-recado');
 const textoRecado = document.getElementById('texto-recado');
 const listaRecados = document.getElementById('lista-recados');
 
-let recados = JSON.parse(localStorage.getItem('recados')) || [];
-
-function carregarRecados() {
-    listaRecados.innerHTML = '';
-
-    recados.forEach((r, i) => {
-        const div = document.createElement('div');
-        div.className = 'recado';
-        div.textContent = r;
-
-        div.addEventListener('click', () => {
-            if (confirm('Apagar este recado? 💔')) {
-                recados.splice(i, 1);
-                localStorage.setItem('recados', JSON.stringify(recados));
-                carregarRecados();
-            }
-        });
-
-        listaRecados.appendChild(div);
-    });
-}
-
+// Enviar recado
 formRecado.addEventListener('submit', e => {
     e.preventDefault();
 
-    if (!textoRecado.value.trim()) return;
+    const texto = textoRecado.value.trim();
+    if (!texto) return;
 
-    recados.push(textoRecado.value);
-    localStorage.setItem('recados', JSON.stringify(recados));
+    db.collection("recados").add({
+        mensagem: texto,
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
     textoRecado.value = '';
-    carregarRecados();
 });
 
-carregarRecados();
+// Carregar recados em tempo real
+db.collection("recados")
+  .orderBy("criadoEm", "desc")
+  .onSnapshot(snapshot => {
+      listaRecados.innerHTML = '';
+      snapshot.forEach(doc => {
+          const div = document.createElement('div');
+          div.className = 'recado';
+          div.textContent = doc.data().mensagem;
+          listaRecados.appendChild(div);
+      });
+  });
 
 
+// ===============================
 // ===== CAPIVARA =====
+// ===============================
 const capivara = document.getElementById('capivara-container');
 const balao = document.getElementById('balao-fala');
 const som = document.getElementById('som-capivara');
@@ -105,7 +97,9 @@ capivara.addEventListener('click', () => {
 });
 
 
-// ===== CORAÇÕES INTERATIVOS =====
+// ===============================
+// ===== CORAÇÕES =====
+// ===============================
 setInterval(() => {
     const c = document.createElement('div');
     c.className = 'coracao';
@@ -122,7 +116,9 @@ setInterval(() => {
 }, 1000);
 
 
-// ===== BOTÕES (CORREÇÃO PRINCIPAL) =====
+// ===============================
+// ===== BOTÕES =====
+// ===============================
 const botaoWhatsapp = document.getElementById('botao-whatsapp');
 const botaoEmail = document.getElementById('botao-email');
 
