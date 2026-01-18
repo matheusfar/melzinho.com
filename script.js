@@ -1,4 +1,6 @@
-
+// ===============================
+// 🔥 FIREBASE CONFIG (TOPO DO ARQUIVO)
+// ===============================
 const firebaseConfig = {
     apiKey: "SUA_API_KEY",
     authDomain: "SEU_AUTH_DOMAIN",
@@ -8,7 +10,10 @@ const firebaseConfig = {
     appId: "SEU_APP_ID"
 };
 
+// Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
+
+// Banco de dados Firestore
 const db = firebase.firestore();
 
 
@@ -29,6 +34,7 @@ const galeriaImagens = [
 ];
 
 const fotos = document.getElementById('fotos-container');
+
 galeriaImagens.forEach(img => {
     const i = document.createElement('img');
     i.src = img;
@@ -64,10 +70,19 @@ db.collection("recados")
   .orderBy("criadoEm", "desc")
   .onSnapshot(snapshot => {
       listaRecados.innerHTML = '';
+
       snapshot.forEach(doc => {
           const div = document.createElement('div');
           div.className = 'recado';
           div.textContent = doc.data().mensagem;
+
+          // Clique para apagar
+          div.onclick = () => {
+              if (confirm('Apagar este recado? 💔')) {
+                  db.collection('recados').doc(doc.id).delete();
+              }
+          };
+
           listaRecados.appendChild(div);
       });
   });
